@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#000000">
+<title>Fotogram</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{--bg:#000;--card:#111;--line:#262626;--txt:#f5f5f5;--dim:#a8a8a8;--blue:#0095f6;--grad:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888)}
+html,body{background:var(--bg);color:var(--txt);font-family:-apple-system,'Segoe UI',Roboto,'Noto Sans Devanagari',sans-serif;height:100%}
+body{max-width:480px;margin:0 auto;min-height:100vh;position:relative;padding-bottom:56px}
+.screen{display:none;min-height:100vh}
+.screen.active{display:block}
+button{background:none;border:none;color:inherit;font:inherit;cursor:pointer}
+input,textarea{background:#1a1a1a;border:1px solid var(--line);border-radius:8px;color:#fff;padding:12px;font-size:15px;width:100%;outline:none}
+img{display:block}
+.avatar{border-radius:50%;object-fit:cover;border:2px solid #262626}
+.story-ring{padding:2px;background:var(--grad);border-radius:50%}
+.story-ring.seen{background:#333}
+#login{display:flex;flex-direction:column;justify-content:center;align-items:center;min-height:100vh;padding:32px;gap:14px}
+.logo{font-family:'Brush Script MT','Segoe Script',cursive;font-size:44px;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{color:var(--dim);font-size:13px;text-align:center}
+#login input{margin-bottom:2px}
+.btn{width:100%;background:var(--blue);color:#fff;padding:11px;border-radius:9px;font-weight:600;font-size:15px}
+.btn:disabled{opacity:.5}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;position:sticky;top:0;background:rgba(0,0,0,.92);z-index:20}
+.topbar .logo{font-size:26px}
+#nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:#000;border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:9px 0;z-index:30}
+#nav button{font-size:22px;width:48px;height:32px;display:flex;align-items:center;justify-content:center}
+#nav button.on{font-weight:900}
+#stories{display:flex;gap:14px;overflow-x:auto;padding:10px 14px;border-bottom:1px solid var(--line);scrollbar-width:none}
+#stories::-webkit-scrollbar{display:none}
+.story{display:flex;flex-direction:column;align-items:center;gap:5px;font-size:11px;color:#ddd;min-width:60px}
+.story img{width:56px;height:56px}
+.post{border-bottom:1px solid var(--line);padding-bottom:8px;position:relative}
+.post-head{display:flex;align-items:center;gap:10px;padding:10px 12px}
+.post-head img{width:34px;height:34px}
+.pname{font-weight:600;font-size:13.5px}
+.psub{font-size:11px;color:var(--dim)}
+.post-img{width:100%;aspect-ratio:1/1;object-fit:cover;background:#111}
+.post-acts{display:flex;gap:16px;padding:9px 14px 2px;font-size:22px}
+.post-acts .spacer{flex:1}
+.liked{color:#ff3040}
+.likes,.cap{padding:0 14px;font-size:13.5px;margin-top:4px}
+.cap span{font-weight:600;margin-right:5px}
+.view-c{padding:0 14px;color:var(--dim);font-size:13px;margin-top:3px}
+#sv{position:fixed;inset:0;background:#000;z-index:100;display:none}
+#sv.on{display:block}
+#sv img{width:100%;height:100vh;object-fit:contain}
+#sv .bars{position:absolute;top:8px;left:8px;right:8px;display:flex;gap:4px}
+#sv .bar{flex:1;height:2.5px;background:rgba(255,255,255,.35);border-radius:2px;overflow:hidden}
+#sv .bar i{display:block;height:100%;width:0;background:#fff}
+#sv .who{position:absolute;top:20px;left:12px;display:flex;align-items:center;gap:8px;font-weight:600;text-shadow:0 1px 3px #000}
+#sv .who img{width:32px;height:32px;border-radius:50%}
+#sv .close{position:absolute;top:18px;right:14px;font-size:24px}
+#sv .tapz{position:absolute;bottom:0;width:35%;height:80%}
+#exgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px}
+#exgrid img{width:100%;aspect-ratio:1/1;object-fit:cover}
+#reelwrap{height:calc(100vh - 56px);overflow-y:auto;scroll-snap-type:y mandatory}
+.reel{height:calc(100vh - 56px);scroll-snap-align:start;position:relative;overflow:hidden}
+.reel .ph{width:100%;height:100%;object-fit:cover}
+.reel .ov{position:absolute;bottom:26px;left:12px;right:64px;text-shadow:0 1px 4px #000}
+.reel .ov .rn{font-weight:700;font-size:14px;display:flex;align-items:center;gap:8px}
+.reel .ov .rn img{width:30px;height:30px;border-radius:50%}
+.reel .ov .rcap{font-size:13px;margin-top:6px}
+.reel .acts{position:absolute;right:8px;bottom:26px;display:flex;flex-direction:column;gap:20px;align-items:center;font-size:24px;text-shadow:0 1px 4px #000}
+.reel .acts small{display:block;font-size:11px;font-weight:600;text-align:center}
+#prof-head{padding:18px 16px 6px;display:flex;gap:22px;align-items:center}
+#prof-head img{width:80px;height:80px}
+.stat{text-align:center;font-size:13px}
+.stat b{display:block;font-size:17px}
+#prof-bio{padding:4px 16px;font-size:14px}
+#prof-name{font-weight:700;padding:8px 16px 0}
+.pbtns{display:flex;gap:8px;padding:12px 16px}
+.pbtns button{flex:1;background:#262626;border-radius:8px;padding:8px;font-weight:600;font-size:13.5px}
+#pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;margin-top:6px}
+#pgrid img{width:100%;aspect-ratio:1/1;object-fit:cover}
+#create{padding:20px;min-height:calc(100vh - 56px)}
+#prev{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:10px;background:#1a1a1a;display:flex;align-items:center;justify-content:center;color:#555;margin-bottom:12px}
+.chat{display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid var(--line)}
+.chat img{width:48px;height:48px}
+.chat .cn{font-weight:600;font-size:14px}
+.chat .cl{font-size:12.5px;color:var(--dim)}
+#chatbox{position:fixed;inset:0;background:#000;z-index:60;display:none;flex-direction:column}
+#chatbox.on{display:flex}
+#msgs{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:6px}
+.msg{max-width:75%;padding:9px 12px;border-radius:18px;font-size:14px;line-height:1.35}
+.msg.them{background:#262626;align-self:flex-start;border-bottom-left-radius:4px}
+.msg.me{background:var(--grad);align-self:flex-end;border-bottom-right-radius:4px}
+#chatbar{display:flex;gap:8px;padding:10px;border-top:1px solid var(--line)}
+.sheet{position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:100%;max-width:480px;background:#111;border-radius:14px 14px 0 0;z-index:80;display:none;flex-direction:column;max-height:70vh}
+.sheet.on{display:flex}
+.sheet h3{padding:14px;font-size:14px;text-align:center;border-bottom:1px solid var(--line)}
+#cmts{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:10px}
+.cmt{display:flex;gap:10px;align-items:flex-start;font-size:13.5px}
+.cmt img{width:30px;height:30px;border-radius:50%}
+.cmt b{margin-right:6px}
+.sheet form{display:flex;gap:8px;padding:10px;border-top:1px solid var(--line)}
+.bigh{position:absolute;font-size:90px;opacity:0;pointer-events:none;transform:translate(-50%,-50%);z-index:5}
+@keyframes pop{0%{opacity:0;transform:translate(-50%,-50%) scale(.4)}30%{opacity:1;transform:translate(-50%,-50%) scale(1.15)}70%{opacity:1}100%{opacity:0;transform:translate(-50%,-60%) scale(1)}}
+.bigh.go{animation:pop .9s ease forwards}
+.toast{position:fixed;bottom:74px;left:50%;transform:translateX(-50%);background:#262626;color:#fff;padding:9px 16px;border-radius:20px;font-size:13px;z-index:99;opacity:0;transition:.3s;pointer-events:none}
+.toast.on{opacity:1}
+.hd{display:flex;align-items:center;gap:14px;padding:10px 14px;position:sticky;top:0;background:rgba(0,0,0,.92);z-index:20}
+.hd b{font-size:17px}
+</style>
+</head>
+<body>
+
+<div id="login" class="screen active">
+  <div class="logo">Fotogram</div>
+  <div class="sub">Demo app. Koi bhi username aur password daal ke andar aa jao, sab kuch is phone me hi save hota hai.</div>
+  <input id="lu" placeholder="Username" autocomplete="off">
+  <input id="lp" type="password" placeholder="Password">
+  <button class="btn" id="lbtn">Log in</button>
+  <div class="sub">Ye koi asli account nahi hai, demo data ke saath khelta hai.</div>
+</div>
+
+<div id="home" class="screen">
+  <div class="topbar"><div class="logo">Fotogram</div><div style="font-size:22px">&#128276;</div></div>
+  <div id="stories"></div>
+  <div id="feed"></div>
+</div>
+
+<div id="explore" class="screen">
+  <div class="topbar"><b style="font-size:17px">Explore</b></div>
+  <div style="padding:0 2px" id="exgrid"></div>
+</div>
+
+<div id="reels" class="screen"><div id="reelwrap"></div></div>
+
+<div id="prof" class="screen">
+  <div class="topbar"><b id="prof-uname" style="font-size:17px"></b><div style="font-size:20px">&#9776;</div></div>
+  <div id="prof-head">
+    <img id="prof-av" class="avatar" src="">
+    <div class="stat"><b id="st-p">0</b>posts</div>
+    <div class="stat"><b id="st-f">0</b>followers</div>
+    <div class="stat"><b id="st-g">0</b>following</div>
+  </div>
+  <div id="prof-name"></div>
+  <div id="prof-bio"></div>
+  <div class="pbtns"><button id="editb">Edit profile</button><button id="shareb">Share profile</button></div>
+  <div id="pgrid"></div>
+</div>
+
+<div id="dm" class="screen">
+  <div class="topbar"><b style="font-size:17px">Messages</b></div>
+  <div id="chatlist"></div>
+</div>
+
+<div id="create" class="screen">
+  <div class="topbar"><b style="font-size:17px">New post</b></div>
+  <div id="prev">Pehle photo chuno</div>
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <button class="btn" style="flex:1" onclick="document.getElementById('fpick').click()">Phone se photo</button>
+    <button class="btn" style="flex:1;background:#262626" id="demop">Demo photo</button>
+  </div>
+  <input type="file" id="fpick" accept="image/*" hidden>
+  <textarea id="capt" rows="3" placeholder="Caption likho..."></textarea>
+  <button class="btn" id="postb" style="margin-top:12px" disabled>Share karo</button>
+</div>
+
+<div id="nav" style="display:none">
+  <button data-s="home" class="on">&#127968;</button>
+  <button data-s="explore">&#128269;</button>
+  <button data-s="create">&#10133;</button>
+  <button data-s="reels">&#127916;</button>
+  <button data-s="dm">&#9993;</button>
+  <button data-s="prof">&#128100;</button>
+</div>
+
+<div id="sv">
+  <div class="bars"></div>
+  <div class="who"><img id="sv-av" class="avatar" src=""><span id="sv-nm"></span></div>
+  <button class="close" onclick="closeStory()">&#10005;</button>
+  <img id="sv-img" src="">
+  <div class="tapz" style="left:0" onclick="prevStory()"></div>
+  <div class="tapz" style="right:0" onclick="nextStory()"></div>
+</div>
+
+<div id="chatbox">
+  <div class="hd"><button onclick="closeChat()">&#8592;</button><img id="cb-av" class="avatar" style="width:34px;height:34px" src=""><b id="cb-nm"></b></div>
+  <div id="msgs"></div>
+  <form id="chatbar"><input id="cbin" placeholder="Message..." autocomplete="off"><button class="btn" style="width:auto;padding:10px 16px">Bhejo</button></form>
+</div>
+
+<div class="sheet" id="cmtsheet">
+  <h3>Comments</h3>
+  <div id="cmts"></div>
+  <form id="cmtform"><input id="cmtin" placeholder="Comment add karo..." autocomplete="off"><button class="btn" style="width:auto;padding:10px 14px">Post</button></form>
+</div>
+
+<div class="bigh" id="bigh">&#10084;&#65039;</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const P=n=>'https://picsum.photos/seed/'+n+'/600/600';
+const V=n=>'https://picsum.photos/seed/'+n+'/700/1200';
+const names=['riya_sharma','arjun_verma','priya_gupta','karan_singh','neha_yadav','rohan_kumar','simran_kaur','aditya_rao'];
+const caps=['Bharat Mata ki Jai 🇮🇳 #desi','exam se pehle wali tension 😩 #studentlife','cycle ride after so long 🚴','ghar ka khana >> sab kuch','Varanasi ghaat evening vibes','diwali ki safai chal rahi 😂','cricket match ka score kya hua?','naya phone cover le liya 😎','raat ki chai hits different ☕','board exam me pass hone ka mantra: padho yaar','raebareli ki galiyon me','dost log masti me 🤪 #squad'];
+const demoUsers=names.map((n,i)=>({u:n,av:P('av'+i)}));
+let DB=null,pickedImg=null;
+function save(){localStorage.setItem('fotogram',JSON.stringify(DB))}
+function load(){DB=JSON.parse(localStorage.getItem('fotogram')||'null')}
+function seed(){
+  DB={me:{u:'tum',av:P('meav'),name:'Tum',bio:'Class 12 student 📚 Raebareli',posts:[]},
+  users:demoUsers.map(u=>({...u,followers:1200,following:180,following_me:false,posts:[]})),
+  stories:[],chats:[],saved:[]};
+  DB.users.forEach((u,i)=>{const n=2+Math.floor(Math.random()*3);
+    for(let j=0;j<n;j++){u.posts.push({id:'p'+i+'_'+j,img:P('ph'+i+'_'+j),cap:caps[(i*2+j)%caps.length],likes:40+Math.floor(Math.random()*900),liked:false,comments:seedCmts()})}});
+  DB.users.slice(0,6).forEach((u,i)=>DB.stories.push({u:u.u,av:u.av,imgs:[V('st'+i+'a'),V('st'+i+'b')],seen:false}));
+  DB.chats=DB.users.slice(0,4).map((u,i)=>({u:u.u,av:u.av,msgs:[{who:'them',t:['kya haal? 🤙','kal milne chalega?','reel dekha tune? 😂','notes bhej de yaar 🙏'][i]}],unread:i<2}));
+  save();
+}
+function seedCmts(){const cs=[];for(let k=0;k<2;k++){const r=Math.floor(Math.random()*names.length);cs.push({u:names[r],t:['🔥🔥','bhai kya shot hai','mazaa aa gaya','😂😂😂','op bhai'][Math.floor(Math.random()*5)]})}return cs}
+function toast(t){const e=document.getElementById('toast');e.textContent=t;e.classList.add('on');setTimeout(()=>e.classList.remove('on'),1800)}
+function show(s){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));document.getElementById(s).classList.add('active');
+  document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.s===s));
+  window.scrollTo(0,0);if(s==='home')renderHome();if(s==='explore')renderExplore();if(s==='reels')renderReels();if(s==='prof')renderProf();if(s==='dm')renderChats();}
+document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>show(b.dataset.s));
+
+document.getElementById('lbtn').onclick=()=>{const u=document.getElementById('lu').value.trim();
+  if(!u){toast('Username likho pehle');return}
+  load();if(!DB)seed();DB.me.u=u;DB.me.name=u;save();document.getElementById('nav').style.display='flex';show('home');toast('Welcome '+u+' 🤙')};
+
+function renderHome(){const fs=document.getElementById('stories');fs.innerHTML='';const f=document.getElementById('feed');f.innerHTML='';
+  DB.stories.forEach((s,i)=>{const d=document.createElement('div');d.className='story';d.innerHTML='<div class="story-ring'+(s.seen?' seen':'')+'"><img class="avatar" src="'+s.av+'"></div>'+s.u;d.onclick=()=>openStory(i);fs.appendChild(d)});
+  const all=[{...DB.me,me:true,posts:DB.me.posts},...DB.users];
+  all.forEach(u=>u.posts.forEach(p=>f.appendChild(postEl(u,p))));
+}
+function postEl(u,p){const d=document.createElement('div');d.className='post';
+  d.innerHTML='<div class="post-head"><img class="avatar" src="'+u.av+'"><div><div class="pname">'+u.u+'</div><div class="psub">Raebareli, India</div></div></div>';
+  const im=document.createElement('img');im.className='post-img';im.src=p.img;let lt=0;
+  im.onpointerdown=e=>{lt=Date.now();const h=document.getElementById('bigh');h.style.left=e.pageX+'px';h.style.top=e.pageY+'px'};
+  im.onpointerup=()=>{if(Date.now()-lt<300){if(!p.liked){p.liked=true;p.likes++;save();upd()}document.getElementById('bigh').classList.add('go');setTimeout(()=>document.getElementById('bigh').classList.remove('go'),900)}};
+  d.appendChild(im);
+  const acts=document.createElement('div');acts.className='post-acts';
+  const bl=document.createElement('button');const bc=document.createElement('button');const bs=document.createElement('button');
+  bl.innerHTML='&#9825;';bc.innerHTML='&#128172;';bs.innerHTML='&#128278;';bs.style.fontSize='21px';
+  bc.onclick=()=>openCmts(p);bs.onclick=()=>{toast('Save ho gaya ✅')};
+  acts.appendChild(bl);acts.appendChild(bc);acts.appendChild(sp());acts.appendChild(bs);d.appendChild(acts);
+  function upd(){bl.innerHTML=p.liked?'&#10084;&#65039;':'&#9825;';bl.classList.toggle('liked',p.liked)}upd();
+  bl.onclick=()=>{p.liked=!p.liked;p.likes+=p.liked?1:-1;save();upd()};
+  const lc=document.createElement('div');lc.className='likes';lc.textContent=p.likes+' likes';
+  const cc=document.createElement('div');cc.className='view-c';cc.textContent='Sabhi '+p.comments.length+' comments dekho';cc.onclick=()=>openCmts(p);
+  const cd=document.createElement('div');cd.className='cap';cd.innerHTML='<span>'+u.u+'</span>'+p.cap;
+  d.appendChild(lc);d.appendChild(cc);d.appendChild(cd);return d}
+function sp(){const s=document.createElement('div');s.className='spacer';return s}
+let curStory=0,storyImg=0,timer=null;
+function openStory(i){curStory=i;storyImg=0;document.getElementById('sv').classList.add('on');playStory()}
+function playStory(){const s=DB.stories[curStory];document.getElementById('sv-av').src=s.av;document.getElementById('sv-nm').textContent=s.u;
+  document.getElementById('sv-img').src=s.imgs[storyImg];
+  const bars=document.querySelector('#sv .bars');bars.innerHTML='';s.imgs.forEach((_,i)=>{const b=document.createElement('div');b.className='bar';b.innerHTML='<i></i>';if(i<storyImg)b.firstChild.style.width='100%';bars.appendChild(b)});
+  const bar=bars.children[storyImg].firstChild;let w=0;clearInterval(timer);
+  timer=setInterval(()=>{w+=1.4;bar.style.width=Math.min(w,100)+'%';if(w>=100)nextStory()},50)}
+function nextStory(){const s=DB.stories[curStory];s.seen=true;save();
+  if(storyImg<s.imgs.length-1){storyImg++;playStory()}else if(curStory<DB.stories.length-1){curStory++;storyImg=0;playStory()}else closeStory()}
+function prevStory(){if(storyImg>0){storyImg--;playStory()}else if(curStory>0){curStory--;storyImg=0;playStory()}}
+function closeStory(){clearInterval(timer);document.getElementById('sv').classList.remove('on');renderHome()}
+function renderExplore(){const g=document.getElementById('exgrid');g.innerHTML='';let k=0;
+  DB.users.forEach(u=>u.posts.forEach(p=>{const im=document.createElement('img');im.src=p.img;g.appendChild(im);k++}));
+  for(;k<9;k++){const im=document.createElement('img');im.src=P('ex'+k);g.appendChild(im)}}
+function renderReels(){const w=document.getElementById('reelwrap');w.innerHTML='';
+  DB.users.slice(0,4).forEach((u,i)=>{const r=document.createElement('div');r.className='reel';
+    r.innerHTML='<img class="ph" src="'+V('rl'+i)+'"><div class="ov"><div class="rn"><img class="avatar" src="'+u.av+'">@'+u.u+'</div><div class="rcap">'+caps[(i+3)%caps.length]+' &#9835; original sound</div></div>';
+    const a=document.createElement('div');a.className='acts';const b=document.createElement('button');b.innerHTML='&#10084;&#65039;<small>'+(120+i*57)+'</small>';
+    b.onclick=()=>toast('Like ho gaya');const c=document.createElement('button');c.innerHTML='&#128172;<small>'+(8+i*3)+'</small>';c.onclick=()=>toast('Comments jald aa rahe (demo)');
+    const s=document.createElement('button');s.innerHTML='&#128228;<small>Share</small>';s.onclick=()=>toast('Link copy ho gaya (demo)');
+    a.appendChild(b);a.appendChild(c);a.appendChild(s);r.appendChild(a);w.appendChild(r)})}
+function renderProf(){document.getElementById('prof-uname').textContent=DB.me.u;
+  document.getElementById('prof-av').src=DB.me.av;document.getElementById('prof-name').textContent=DB.me.name;
+  document.getElementById('prof-bio').textContent=DB.me.bio;
+  document.getElementById('st-p').textContent=DB.me.posts.length;
+  document.getElementById('st-f').textContent=86+DB.me.posts.length*7;document.getElementById('st-g').textContent=213;
+  const g=document.getElementById('pgrid');g.innerHTML='';
+  DB.me.posts.forEach(p=>{const im=document.createElement('img');im.src=p.img;g.appendChild(im)});
+  if(!DB.me.posts.length){const e=document.createElement('div');e.style.cssText='grid-column:span 3;text-align:center;color:#777;padding:40px 20px;font-size:14px';e.textContent='Abhi koi post nahi. + button se pehli photo post karo';g.appendChild(e)}}
+document.getElementById('editb').onclick=()=>{const b=prompt('Naya bio likho',DB.me.bio);if(b!==null){DB.me.bio=b;save();renderProf()}};
+document.getElementById('shareb').onclick=()=>toast('Profile link copy (demo)');
+const fp=document.getElementById('fpick');
+fp.onchange=()=>{const f=fp.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{pickedImg=r.result;setPrev(pickedImg);document.getElementById('postb').disabled=false};r.readAsDataURL(f)};
+document.getElementById('demop').onclick=()=>{pickedImg=P('own'+Math.floor(Math.random()*999));setPrev(pickedImg);document.getElementById('postb').disabled=false};
+function setPrev(src){const pv=document.getElementById('prev');pv.innerHTML='';const im=document.createElement('img');im.src=src;im.style.cssText='width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:10px';pv.appendChild(im)}
+document.getElementById('postb').onclick=()=>{const c=document.getElementById('capt').value||'';
+  DB.me.posts.unshift({id:'own'+Date.now(),img:pickedImg,cap:c,likes:0,liked:false,comments:[]});save();
+  document.getElementById('capt').value='';document.getElementById('postb').disabled=true;pickedImg=null;document.getElementById('prev').textContent='Pehle photo chuno';
+  toast('Post ho gaya 🎉');show('prof')};
+function renderChats(){const l=document.getElementById('chatlist');l.innerHTML='';
+  DB.chats.forEach((c,i)=>{const d=document.createElement('div');d.className='chat';
+    d.innerHTML='<img class="avatar" src="'+c.av+'"><div><div class="cn">'+c.u+'</div><div class="cl">'+c.msgs[c.msgs.length-1].t+'</div></div>'+(c.unread?'<div style="margin-left:auto;width:9px;height:9px;background:#0095f6;border-radius:50%"></div>':'');
+    d.onclick=()=>openChat(i);l.appendChild(d)})}
+let curChat=0;
+function openChat(i){curChat=i;const c=DB.chats[i];c.unread=false;save();document.getElementById('cb-av').src=c.av;document.getElementById('cb-nm').textContent=c.u;
+  drawMsgs();document.getElementById('chatbox').classList.add('on')}
+function drawMsgs(){const m=document.getElementById('msgs');m.innerHTML='';DB.chats[curChat].msgs.forEach(x=>{const d=document.createElement('div');d.className='msg '+x.who;d.textContent=x.t;m.appendChild(d)});m.scrollTop=1e6}
+function closeChat(){document.getElementById('chatbox').classList.remove('on');renderChats()}
+document.getElementById('chatbar').onsubmit=e=>{e.preventDefault();const i=document.getElementById('cbin');const t=i.value.trim();if(!t)return;
+  DB.chats[curChat].msgs.push({who:'me',t:t});save();i.value='';drawMsgs();
+  setTimeout(()=>{const r=['achha 👍','sahi hai bhai 😂','haan bata','kal dekhte hain','reel wali baat kar rahe?','thik hai 🤙'][Math.floor(Math.random()*6)];
+    DB.chats[curChat].msgs.push({who:'them',t:r});save();if(document.getElementById('chatbox').classList.contains('on'))drawMsgs()},900)};
+let curPost=null;
+function openCmts(p){curPost=p;const box=document.getElementById('cmts');box.innerHTML='';
+  p.comments.forEach(c=>{const d=document.createElement('div');d.className='cmt';d.innerHTML='<img class="avatar" src="'+P('av'+Math.max(0,names.indexOf(c.u)))+'"><div><b>'+c.u+'</b>'+c.t+'</div>';box.appendChild(d)});
+  if(!p.comments.length)box.innerHTML='<div style="color:#777;text-align:center;padding:20px">Abhi koi comment nahi</div>';
+  document.getElementById('cmtsheet').classList.add('on')}
+document.getElementById('cmtsheet').addEventListener('click',e=>{if(e.target.id==='cmtsheet')document.getElementById('cmtsheet').classList.remove('on')});
+document.getElementById('cmtform').onsubmit=e=>{e.preventDefault();const i=document.getElementById('cmtin');const t=i.value.trim();if(!t||!curPost)return;
+  curPost.comments.push({u:DB.me.u,t:t});save();i.value='';openCmts(curPost)};
+</script>
+</body>
+</html>
